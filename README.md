@@ -15,6 +15,10 @@ Embedded in memory civetweb server, supporting http / https GET POST with suppor
 
 Use EZpack_2.1_UnPackFromDisk.pb to extract www.ezp to get source of WWW GitHub doesn't like adding more than 100 files
 
+see Civet_server_in_memSSL.pb for general use 
+
+
+
 
 
 
