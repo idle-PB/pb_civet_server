@@ -1,6 +1,6 @@
 # pb_civet_server
-PB Civet Server, an embedded in memory http/https server based on civetweb
-Version 0.8 
+PB Civet Server, an embedded in memory http/https server based on civetweb 1.10
+PB Civet Server Version 0.8 
 PureBasic 5.62, Win32 build only, currently      
 copyright Andrew Ferguson (idle) 2018  
 see https://github.com/civetweb/civetweb for details of civetweb project
