@@ -13,7 +13,8 @@ PB_Civet_Server version 0.8
 
 Embedded in memory civetweb server, supporting http / https GET POST with support for WebSockets, CGI, SSL, FILES
 
-Use EZpack_2.1_UnPackFromDisk.pb to extract www.ezp to get source of WWW GitHub doesn't like adding more than 100 files
+Use EZpack_2.1_UnPackFromDisk.pb to extract www.ezp into the source folder, GitHub doesn't like adding more than 100 files
+in a folder. 
 
 see Civet_server_in_memSSL.pb for general use 
 
