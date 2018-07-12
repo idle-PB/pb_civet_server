@@ -5,7 +5,7 @@ PB Civet Server Version 0.8
 
 PureBasic 5.62, Win32 build only, currently
 
-copyright Andrew Ferguson (idle) 2018  
+Andrew Ferguson (idle) 2018  
 
 see https://github.com/civetweb/civetweb for details of civetweb project for features
 
@@ -16,7 +16,7 @@ Embedded in memory civetweb server, supporting http / https GET POST with suppor
 Use EZpack_2.1_UnPackFromDisk.pb to extract www.ezp into the source folder, GitHub doesn't like adding more than 100 files
 in a folder. 
 
-see Civet_server_in_memSSL.pb for general use 
+see and run Civet_server_in_memSSL.pb for general use.  
 
 
 
