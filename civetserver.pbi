@@ -32,7 +32,7 @@ IncludeFile "mimetypes.pbi"
 Structure Civet_Server_Tokens 
   name.s
   value.s 
- EndStructure   
+EndStructure   
      
  Structure Civet_Server_Request
   ctx.i                              ; Context of connection
@@ -51,7 +51,6 @@ Structure Civet_Server_Handler
   *function 
   path.s 
 EndStructure   
-
 
 Prototype Civet_Server_PostProcess(ctx,*request.Civet_Server_Request) ;POST Callback prototype  
 Prototype Civet_Server_GetProcess(ctx,*request.Civet_Server_Request)  ;GET  Callback Prototype 
@@ -497,7 +496,9 @@ Procedure Civet_Server_Stop(*app.Civet_Server)
    If Civet_Server_log_access_file 
      CloseFile(Civet_Server_log_access_file) 
    EndIf   
-   
+   If Civet_Server_Log_Error_File 
+      CloseFile(Civet_Server_Log_Error_File) 
+   EndIf   
  EndProcedure 
  
 ;-Send a responce to the client with either a file or in memory object
@@ -705,7 +706,7 @@ ProcedureC.l _Civet_Server_Handler(ctx,*app.Civet_Server)
       EndIf  
       hlen = MemorySize(*header)-1 ;important don't send null char at end of header string len-1
             
-      mg_lock_context(ctx)  ;lock the context before mg_write         
+     ; mg_lock_context(ctx)  ;lock the context before mg_write         
       
       result = mg_write(ctx,*header,hlen) 
       FreeMemory(*header)
@@ -727,7 +728,7 @@ ProcedureC.l _Civet_Server_Handler(ctx,*app.Civet_Server)
       
       pack\CloseFile(filenum)  
       pack\Free() 
-      mg_unlock_context(ctx)
+    ;  mg_unlock_context(ctx)
       
       ProcedureReturn result 
     Else 
@@ -741,7 +742,7 @@ EndProcedure
 
 
 ; IDE Options = PureBasic 5.62 (Windows - x64)
-; CursorPosition = 595
-; FirstLine = 713
+; CursorPosition = 620
+; FirstLine = 620
 ; Folding = ---
 ; EnableXP
