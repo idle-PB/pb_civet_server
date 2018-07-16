@@ -550,8 +550,11 @@ Procedure Civet_Server_Start(*app.Civet_Server,httpPort.i,httpsPort.i,IP.s="loca
   Protected ctx,a
   For a = 0 To try 
     *app\http_port = Str(httpPort+a) 
-    *app\https_port = Str(httpsPort+a) 
-    *app\Server_Settings\listening_ports = IP + ":" + *app\http_Port +"," + *app\https_Port + "s" 
+    *app\Server_Settings\listening_ports = IP + ":" + *app\http_Port 
+    If httpsPort 
+      *app\https_port = Str(httpsPort+a) 
+      *app\Server_Settings\listening_ports +"," + *app\https_Port + "s"   
+    EndIf  
     ctx =  Civet_Server_Try_Start(*app) 
     If ctx 
       ProcedureReturn ctx 
@@ -813,6 +816,7 @@ EndProcedure
 
 
 ; IDE Options = PureBasic 5.62 (Windows - x64)
-; CursorPosition = 5
+; CursorPosition = 557
+; FirstLine = 545
 ; Folding = ---
 ; EnableXP
