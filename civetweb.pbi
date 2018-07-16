@@ -163,60 +163,6 @@ Structure mg_form_data_handler
   *user_data 
 EndStructure  
 
-Structure CivetWeb_Server_Settings 
-   cgi_pattern.s    ;**.cgi$|**.pl$|**.php$
-   cgi_environment.s  ;comma seperated VARIABLE1=VALUE1,VARIABLE2=VALUE2
-   cgi_interpreter.s  ;Path to an executable to use as CGI interpreter
-   put_delete_auth_file.s ;Passwords file for PUT and DELETE requests.
-   protect_uri.s    ;Comma separated list of URI=PATH pairs
-   authentication_domain.s ;Authorization realm used for HTTP digest authentication.used in the encoding of the .htpasswd auth 
-   enable_auth_domain_check.s ;yes
-   ssi_pattern.s              ;**.shtml$|**.shtm$
-   throttle.s                 ; * limit all or x.x.x.x/mask subnet or uri_prefix_pattern eg /downloads/=5k  
-   access_log_file.s          ;Path To a file For access logs defaults none 
-   enable_directory_listing.s ;yes or no default yes 
-   error_log_file.s           ;Path to a file for error logs. defaults none
-   global_auth_file.s         ;Path to a global passwords file form user:realm:digest \r\n test:test.com:ce0220efc2dd2fad6185e1f1af5a4327
-   index_files.s              ;Comma-separated list of files to be treated as directory index files. 
-   enable_keep_alive.s        ;yes or no 
-   access_control_list.s      ;; -0.0.0.0/0,+192.168/16    deny all accesses, only allow 192.168/16 subnet
-   extra_mime_types.s         ;.cpp=plain/text,.java=plain/text
-   listening_ports.s           ;eg 127.0.0.1:80,443s  or [::1]:8080 ipv6
-   document_root.s            ;the directory to serve. "." currentdir but better to use absolute path
-   ssl_certificate.s          ;Path to the SSL certificate file.only if ssl port listening
-   num_threads.s              ;number of concurrent HTTP connections eg 50 
-   run_as_user.s              ;eg run_as_user webserver
-   url_rewrite_patterns.s     ;eg **.doc$=/path/to/cgi-bin/handle_doc.cgi
-   hide_files_patterns.s      ;eg secret.txt|**.hide
-   request_timeout_ms.s       ;30000
-   keep_alive_timeout_ms.s    ;eg 500 Or 0 Idle timeout between two requests in one keep-alive connection.
-   cgi_timeout_ms.s           ;Maximum allowed Runtime For CGI scripts. default is no timeout
-   linger_timeout_ms.s        ;Set TCP socket linger timeout before closing sockets or 0 abortive close, -1 turn off linger -2 wont set linger
-   websocket_timeout_ms.s     ;Timeout for network read and network write operations for websockets, WS(S), in milliseconds
-   enable_websocket_ping_pong.s ;yes no 
-   websocket_root.s             ;if different than document root 
-   access_control_allow_origin.s;* Access-Control-Allow-Origin header field, used for cross-origin resource sharing (CORS).
-   access_control_allow_methods.s ;*
-   access_control_allow_headers.s ;*
-   error_pages.s                  ;This option may be used to specify a directory for user defined error pages.
-   tcp_nodelay.s                  ;0 or 1 default 0=Keep the default: Nagel's algorithm enabled
-   static_file_max_age.s          ;3600 Set the maximum time (in seconds) a cache may store a static files.
-   strict_transport_security_max_age.s ;Set the Strict-Transport-Security header, and set the max-age value. force https
-   decode_url.s                       ;default yes but note only if you let civet handle it 
-   ssl_verify_peer.s                   ;yes no Enable client's certificate verification by the server.
-   ssl_ca_path.s                       ;Name of a directory containing trusted CA certificates.
-   ssl_ca_file.s                       ;Path to a .pem file containing trusted certificates
-   ssl_verify_depth.s                  ;9 Sets maximum depth of certificate chain. 
-   ssl_default_verify_paths.s          ;yes Loads default trusted certificates locations set at openssl compile time.
-   ssl_cipher_list.s                   ;eg ALL or AES128:!MD5   AES 128 with digests other than MD5
-   ssl_protocol_version.s              ;0 =SSL2+SSL3+TLS1.0+TLS1.1+TLS1.2 or 1 = SSL3+TLS1.0+TLS1.1+TLS1.2 .. 4
-   ssl_short_trust.s                   ;no  Enables the use of short lived certificates.
-   allow_sendfile_call.s               ;yes linux only 
-   case_sensitive.s                    ;no This option can be uset to enable case URLs for Windows servers
-   allow_index_script_resource.s       ;no 
-   additional_header.s                 ;Send additional HTTP response header line for every request "X-Frame-Options: SAMEORIGIN"
- EndStructure  
-
   
 ; /* This Structure contains callback functions For handling form fields.
 ;    It is used As an argument To mg_handle_form_request. */
@@ -1573,7 +1519,8 @@ CompilerEndIf
 
 
 ; IDE Options = PureBasic 5.62 (Windows - x64)
-; CursorPosition = 7
+; CursorPosition = 165
+; FirstLine = 6
 ; Folding = ------
 ; EnableThread
 ; EnableXP

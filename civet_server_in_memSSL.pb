@@ -32,7 +32,7 @@ Procedure cbGet(ctx,*request.Civet_Server_Request)
   Next 
   
   If *request\mQuery("play")\value = "Waponez" 
-    RunProgram("Http://127.0.0.1:8080/Waponez.html")
+    RunProgram("Http://127.0.0.1/Waponez.html")
     Civet_Server_Send_Response(ctx,"",0,0,"204 No Content") 
     ProcedureReturn 204
   EndIf     
@@ -50,9 +50,9 @@ app\cbpost = @cbpost()   ;set a call back to process the post tokens
 app\cbget = @cbGet()     ;set a call back to process query strings from a get request 
 
 Debug GetPathPart(ProgramFilename()) + app\dirRelitive
-
+app\Server_Features = #MG_FEATURE_SUPPORTS_FILES 
 app\Server_Settings\document_root = GetPathPart(ProgramFilename()) + app\dirRelitive ;set a root to be safe
-app\Server_Settings\listening_ports = "8080,443s"
+app\Server_Settings\access_control_list = "-0.0.0.0/0,+127.0.0.1"  ;block all and then only allow connection from 127.0.0.1
 app\Server_Settings\error_log_file = GetPathPart(ProgramFilename()) + "error.log"    ;set logs 
 app\Server_Settings\access_log_file = GetPathPart(ProgramFilename()) + "access.log"  ;set logs 
 app\Server_Settings\static_file_max_age = "0" ;nothing should be cached when debugging                     
@@ -73,9 +73,9 @@ app\Server_Settings\enable_keep_alive = "yes"
 ;it will be named as the folder of the app\dirRelitive setting with an extension of .ezp eg: www.ezp 
 ;Civet_Server_Create_Pack(app)
 
-If Civet_Server_Start(app) 
+If Civet_Server_Start(app,80,443,"127.0.0.1")
   If OpenWindow(0,0,0,1024,600,"PB_Civet_Server_in_memSSL example of in memory embedded PB_Civet_Server " + app\Server_Settings\listening_ports,#PB_Window_SystemMenu |#PB_Window_SizeGadget |#PB_Window_MaximizeGadget) 
-    WebGadget(2,0,0,1024,600,"https://127.0.0.1:443")
+    WebGadget(2,0,0,1024,600,"https://127.0.0.1:"+ app\https_port) 
     BindEvent(#PB_Event_SizeWindow,@Resize()) 
     Repeat
     Until WaitWindowEvent(30) = #PB_Event_CloseWindow
@@ -92,8 +92,8 @@ DataSection
   EndIndex:
 EndDataSection 
 ; IDE Options = PureBasic 5.62 (Windows - x64)
-; CursorPosition = 66
-; FirstLine = 58
+; CursorPosition = 55
+; FirstLine = 64
 ; Folding = -
 ; EnableThread
 ; EnableXP
