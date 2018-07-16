@@ -2,7 +2,7 @@
 ; Idle (Andrew Ferguson)
 ; Pb Civet Server built on civetweb
 ; Civetweb project https://github.com/civetweb 
-; PBVersion 0.8 for PB 5.62 x86 civetweb 1.10.0 
+; PBVersion 0.9 for PB 5.62 x86 civetweb 1.10.0 
 ; Copyright (c) 2018 Andrew Ferguson
 
 ; * Permission is hereby granted, free of charge, To any person obtaining a copy
@@ -813,6 +813,6 @@ EndProcedure
 
 
 ; IDE Options = PureBasic 5.62 (Windows - x64)
-; CursorPosition = 781
+; CursorPosition = 5
 ; Folding = ---
 ; EnableXP

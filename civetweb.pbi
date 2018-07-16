@@ -1,7 +1,7 @@
 ﻿; Civetweb.pbi 
 ; Idle (Andrew Ferguson) 
 ; Civetweb project https://github.com/civetweb 
-; PBVersion 0.8 for PB 5.62 x86 civetweb 1.10 
+; PBVersion 0.9 for PB 5.62 x86 civetweb 1.10 
 ; 
 ; Logging to file is currently broken if you want to log use the callbacks and write to file
 ; a patch has been made in civetserver to do access logs.  
@@ -1519,8 +1519,7 @@ CompilerEndIf
 
 
 ; IDE Options = PureBasic 5.62 (Windows - x64)
-; CursorPosition = 165
-; FirstLine = 6
+; CursorPosition = 3
 ; Folding = ------
 ; EnableThread
 ; EnableXP
