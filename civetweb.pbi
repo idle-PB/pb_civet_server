@@ -1519,7 +1519,8 @@ CompilerEndIf
 
 
 ; IDE Options = PureBasic 5.62 (Windows - x64)
-; CursorPosition = 3
+; CursorPosition = 233
+; FirstLine = 220
 ; Folding = ------
 ; EnableThread
 ; EnableXP

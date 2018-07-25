@@ -6,6 +6,22 @@ Procedure Resize()
   ResizeGadget(2,0,0,WindowWidth(0),WindowHeight(0)) 
 EndProcedure 
 
+;If you declare a runtime procedure and add a tag <?PB ElementFillTable() /> in the source html page remamed as .pbh 
+;it will call the function and inline the code in the output
+Runtime Procedure ElementsFillTable(*app.Civet_Server) 
+  Protected sout.s,sum.f,a  
+  sout = "<div><H2>Output from ElementsFillTable() Callback</h2></div>"
+  sout + "<div class='table-wrapper'><table><thead><tr><th>Name</th><th>Description</th><th>Price</th></tr></thead>" + #LF$
+  sout + "<tbody>" + #LF$ 
+  For a = 1 To 20 
+    sout + "<tr><td>Item " + Str(a) + "</td><td>Ante turpis integer aliquet porttitor.</td><td>" + StrF(a * 2.99,2) + "</td></tr>" + #LF$
+    sum + (a * 2.99)  
+  Next 
+  sout + "</tbody><tfoot><tr><td colspan='2'></td><td>$" + StrF(sum,2) + "</td></tr></tfoot></table></div>"
+  ProcedureReturn UTF8(sout) 
+  
+EndProcedure   
+
 Procedure cbPost(ctx,*request.Civet_Server_Request) ;callbacks are threaded only use locally scoped resources  
   
   Debug "cbpost request type " +  *request\RequestType 
@@ -15,7 +31,7 @@ Procedure cbPost(ctx,*request.Civet_Server_Request) ;callbacks are threaded only
     Debug *request\mquery()\name + " " + *request\mquery()\value 
   Next
   
-  *request\Uri = "/elements.html"  ;redirect 
+  *request\Uri = "/elements.pbh"  ;redirect to  
   
   ProcedureReturn 0 ;to continue processing or 200  
   
@@ -63,7 +79,7 @@ app\Server_Settings\enable_keep_alive = "yes"
 ;app\Server_CallBacks\end_request = @cb_end_request()     ;or if you want to overide civetweb, declared in civetweb.pbi 
 ;app\Server_CallBacks\connection_close = @cb_connection_closed() 
 ;app\Server_CallBacks\log_Access = @cb_log_access() 
-;app\Server_CallBacks\log_message = @cb_log_message() 
+;app\Server_CallBacks\log_message = @cb_log_message()  
 ;app\Server_CallBacks\http_error = @cb_http_error() 
 ;app\Server_CallBacks\init_connection = @cb_init_Connection() 
 ;app\Server_CallBacks\init_context = @cb_init_Context() 
@@ -92,12 +108,13 @@ DataSection
   EndIndex:
 EndDataSection 
 ; IDE Options = PureBasic 5.62 (Windows - x64)
-; CursorPosition = 55
-; FirstLine = 64
+; CursorPosition = 89
+; FirstLine = 71
 ; Folding = -
 ; EnableThread
 ; EnableXP
-; Executable = civet_server_in_memSSL.exe
+; Executable = civet_server_in_mem.exe
 ; CommandLine = _WIN32_IE=$0600
 ; CompileSourceDirectory
 ; Compiler = PureBasic 5.62 (Windows - x86)
+; EnablePurifier = 1,1,1,1

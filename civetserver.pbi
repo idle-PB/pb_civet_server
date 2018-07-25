@@ -27,7 +27,7 @@
 IncludeFile "civetweb.pbi"
 IncludeFile "ezpack\EzPack.pbi"
 IncludeFile "mimetypes.pbi" 
-
+IncludeFile "Civet_server_pre_process.pbi"
 
 Structure Civet_Server_Tokens 
   name.s
@@ -133,6 +133,7 @@ Structure Civet_Server_Settings
   
   DeclareC.l _Civet_Server_Handler(ctx,*app.Civet_Server) 
   Declare Civet_Server_Stop(*app.Civet_Server) 
+  
   ;utility function to create a pack of your website once you've finished editing 
   ;call it before starting the server and it will create or overwrite the pack file 
   Procedure Civet_Server_Create_Pack(*app.Civet_Server)
@@ -142,7 +143,9 @@ Structure Civet_Server_Settings
      pack\CreatePack(file) 
      pack\Free() 
   EndProcedure   
-      
+  
+  ;-Add additional handler functions currently returns raw civetweb callbacks
+  ;will adapt this so the callbacks are called from the internal _Civet_server_handler
   Procedure Civet_Server_AddHandler(*app.Civet_Server,*function,path.s) 
     
     If Not FindMapElement(*app\Server_handlers(),path)
@@ -543,15 +546,17 @@ EndProcedure
     ProcedureReturn *app\Civet_Context 
   EndIf 
       
-EndProcedure  
+EndProcedure 
 
-
-Procedure Civet_Server_Start(*app.Civet_Server,httpPort.i,httpsPort.i,IP.s="localhost",try=10) 
+;-Civet_Server_Start will try to start server from the specified ports up to the number of try, incrementing the port numbers
+;until it can start, it's not ideal since it needs to exit civetweb completely and clean up before retrying, I did consider 
+;sniffing ports before start up but that could lead to race conditions should another app grab the ports before civetweb.
+Procedure Civet_Server_Start(*app.Civet_Server,httpPort.i=8080,httpsPort.i=0,IP.s="localhost",try=10) 
   Protected ctx,a
   For a = 0 To try 
     *app\http_port = Str(httpPort+a) 
     *app\Server_Settings\listening_ports = IP + ":" + *app\http_Port 
-    If httpsPort 
+    If httpsPort <> 0 
       *app\https_port = Str(httpsPort+a) 
       *app\Server_Settings\listening_ports +"," + *app\https_Port + "s"   
     EndIf  
@@ -694,13 +699,67 @@ Procedure _Civet_Server_ProcessPost(ctx,*request.Civet_Server_Request,*cbPostPro
    
 EndProcedure 
 
+Procedure _Civet_Server_Send_Memory(ctx,*mem,*pre,*rec.Civet_Server_Request,content.s,clen) 
+  Protected *header,hlen,result
+  If UCase(*rec\mheaders("Connection")\value) = "KEEP-ALIVE"
+        *header = Ascii("HTTP/1.1 200 OK" + #CRLF$ + "Date: " + _Civet_Server_Get_Date() + #CRLF$ + "Connection: Keep-Alive" + #CRLF$ + "Content-Length: "  + Str(clen) + #CRLF$ + "Content-Type: " + content + #CRLF$  +"Cache-Control: no-cache" + #CRLF$ +  #CRLF$)
+      Else 
+        *header = Ascii("HTTP/1.1 200 OK" + #CRLF$ + "Date: " + _Civet_Server_Get_Date() + #CRLF$ + "Connection: Close" + #CRLF$ + "Content-Length: "  + Str(clen) + #CRLF$ + "Content-Type: " + content + #CRLF$  +"Cache-Control: no-cache" + #CRLF$ +  #CRLF$)
+      EndIf  
+      hlen = MemorySize(*header)-1 ;important don't send null char at end of header string len-1
+           
+      result = mg_write(ctx,*header,hlen) 
+      FreeMemory(*header)
+      
+      If result > 0 
+        result = mg_Write(ctx,*mem,clen) 
+        If *pre 
+          PreProcessor_free(*pre)
+        EndIf   
+        If result > 0         
+          result = 200 
+        ElseIf result = 0 
+          result = 444 
+        Else 
+          result = 500 
+        EndIf   
+      ElseIf result = 0 
+        result = 444  
+      Else 
+        result = 500 
+      EndIf 
+  ProcedureReturn result 
+  
+EndProcedure   
+
+Procedure _Civet_Server_Pre_Process(ctx,*app.Civet_Server,*rec.Civet_Server_Request) 
+  
+  Protected *pre = New_PreProcessor() 
+  Protected fn,*input,clen,*output,content.s 
+  
+  fn = ReadFile(#PB_Any,*app\DirRelitive + *rec\Uri)
+  If fn 
+    clen = Lof(fn)
+    *input = AllocateMemory(clen) 
+    ReadData(fn,*input,clen)
+    *output = Preprocess(*pre,*input,clen,*app) 
+    clen = MemorySize(*output) 
+    content = "text/html" 
+    _Civet_Server_Send_Memory(ctx,*output,*pre,*rec,content,clen) 
+    CloseFile(fn) 
+    FreeMemory(*input) 
+  EndIf   
+    
+EndProcedure   
+
 ;procedure is threaded and rentrant calls will be made concurrently, any external resources must be thread safe or locally scoped  
 ProcedureC.l _Civet_Server_Handler(ctx,*app.Civet_Server) 
   Protected *req.mg_request_info,*reqheader.mg_header,nhead,a,result   
   Protected uri.s,filenum,*output,*header,hlen,content.s,clen,strResult.s 
   Protected key.s,value.s,time   
   Protected Request.Civet_Server_Request
-
+  Protected te,ts = ElapsedMilliseconds() 
+  
   *req = mg_get_request_info(ctx)
   If  *req\num_headers 
     For a = 0 To *req\num_headers-1 
@@ -721,33 +780,42 @@ ProcedureC.l _Civet_Server_Handler(ctx,*app.Civet_Server)
   
   Debug "Method " + Request\RequestType +" URI " + uri 
   
+  content = Civet_Server_GetMimeType(Request\uri) 
+  
+  
   If Request\RequestType = "POST" 
     Result =_Civet_Server_ProcessPost(ctx,@Request,*app\cbpost) 
     If Result <> 0
       ProcedureReturn result  
-    Else
-      If *app\packAddress = 0
+    ElseIf *app\packAddress = 0
+      content = Civet_Server_GetMimeType(Request\uri) 
+      If content = "text/pbh" 
+         _Civet_Server_Pre_Process(ctx,*app,@Request) 
+         ProcedureReturn 200
+      Else  
         mg_send_file(ctx,*app\DirRelitive + Request\Uri) 
-        ProcedureReturn 200
-      EndIf
+        ProcedureReturn 200  
+       EndIf 
     EndIf   
   EndIf
-  
+    
   If *req\query_string ;if theres a query string
     Request\querystring = URLDecoder(PeekS(@*req\query_string,-1,#PB_UTF8))
-    
     _Civet_Server_ProcessQueryString(Request\querystring,@Request) 
     If *app\cbget 
       Result = *app\cbget(ctx,@Request) 
       If Result <> 0
         ProcedureReturn result 
-      Else
-        If *app\packAddress = 0
-          mg_send_file(ctx,*app\DirRelitive + Request\Uri) 
-          ProcedureReturn 200
-        EndIf
-      EndIf   
-    EndIf 
+      ElseIf *app\packAddress = 0
+        If content = "text/pbh" 
+          _Civet_Server_Pre_Process(ctx,*app,@Request)
+          ProcedureReturn 200 
+        Else
+         mg_send_file(ctx,*app\DirRelitive + Request\Uri) 
+         ProcedureReturn 200     
+       EndIf
+     EndIf   
+   EndIf 
   EndIf 
   
   If *app\packAddress
@@ -772,34 +840,16 @@ ProcedureC.l _Civet_Server_Handler(ctx,*app.Civet_Server)
     If filenum
       
       *output = pack\CatchFile(filenum)  
-      
       clen = pack\getfilesize(filenum) 
       
-           
-      If UCase(Request\mheaders("Connection")\value) = "KEEP-ALIVE"
-        *header = Ascii("HTTP/1.1 200 OK" + #CRLF$ + "Date: " + _Civet_Server_Get_Date() + #CRLF$ + "Connection: Keep-Alive" + #CRLF$ + "Content-Length: "  + Str(clen) + #CRLF$ + "Content-Type: " + content + #CRLF$  +"Cache-Control: no-cache" + #CRLF$ +  #CRLF$)
-      Else 
-        *header = Ascii("HTTP/1.1 200 OK" + #CRLF$ + "Date: " + _Civet_Server_Get_Date() + #CRLF$ + "Connection: Close" + #CRLF$ + "Content-Length: "  + Str(clen) + #CRLF$ + "Content-Type: " + content + #CRLF$  +"Cache-Control: no-cache" + #CRLF$ +  #CRLF$)
-      EndIf  
-      hlen = MemorySize(*header)-1 ;important don't send null char at end of header string len-1
-           
-      result = mg_write(ctx,*header,hlen) 
-      FreeMemory(*header)
+      If content = "text/pbh" 
+        Protected *pre = New_PreProcessor() 
+        *output = Preprocess(*pre,*output,clen,*app) 
+        clen = MemorySize(*output) 
+        content = "text/html" 
+      EndIf      
       
-      If result > 0 
-        result = mg_Write(ctx,*output,clen) 
-        If result > 0         
-          result = 200 
-        ElseIf result = 0 
-          result = 444 
-        Else 
-          result = 500 
-        EndIf   
-      ElseIf result = 0 
-        result = 444  
-      Else 
-        result = 500 
-      EndIf 
+      result = _Civet_Server_Send_Memory(ctx,*output,*pre,@Request,content,clen)
       
       pack\CloseFile(filenum)  
       pack\Free() 
@@ -810,13 +860,16 @@ ProcedureC.l _Civet_Server_Handler(ctx,*app.Civet_Server)
       ProcedureReturn 404 
     EndIf 
     
+  ElseIf content = "text/pbh" 
+     _Civet_Server_Pre_Process(ctx,*app,@Request)
+     ProcedureReturn 200
   EndIf  
   
 EndProcedure  
 
 
 ; IDE Options = PureBasic 5.62 (Windows - x64)
-; CursorPosition = 557
-; FirstLine = 545
-; Folding = ---
+; CursorPosition = 799
+; FirstLine = 841
+; Folding = ----
 ; EnableXP

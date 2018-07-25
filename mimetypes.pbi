@@ -68,6 +68,7 @@ Procedure MimeTypes_Init()
     
     setmimetype(".wrl", 4, "model/vrml")
     
+    setmimetype(".pbh", 4, "text/pbh")
     setmimetype(".js", 3, "text/javascript")
     setmimetype(".css", 4, "text/css")
     setmimetype(".csv", 4, "text/csv")
@@ -132,8 +133,8 @@ EndProcedure
 
 
 ; IDE Options = PureBasic 5.62 (Windows - x64)
-; CursorPosition = 55
-; FirstLine = 42
+; CursorPosition = 71
+; FirstLine = 64
 ; Folding = -
 ; EnableXP
 ; Compiler = PureBasic 5.62 (Windows - x86)
