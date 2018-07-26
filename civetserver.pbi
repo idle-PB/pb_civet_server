@@ -194,7 +194,7 @@ EndProcedure
 
 ProcedureC Civet_Server_log_Error(connection,*message)
   Protected msg.s 
-  msg = PeekS(*message,-1,#PB_UTF8) 
+  msg = Str(*message) ;PeekS(*message,-1,#PB_UTF8) 
   If IsFile(Civet_Server_Log_Error_File)
     WriteString(Civet_Server_Log_Error_File,msg,#PB_Unicode)
     WriteString(Civet_Server_Log_Error_File,#CRLF$,#PB_Unicode)
@@ -869,6 +869,7 @@ EndProcedure
 
 
 ; IDE Options = PureBasic 5.62 (Windows - x64)
-; CursorPosition = 4
+; CursorPosition = 196
+; FirstLine = 194
 ; Folding = ----
 ; EnableXP
